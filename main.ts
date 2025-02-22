@@ -41,6 +41,7 @@ function gameOver () {
     last_score = Math.ceil((end_time - start_time) / 1000)
     basic.showIcon(IconNames.Heart)
     basic.pause(200)
+    basic.clearScreen()
     basic.showString("" + (last_score))
 }
 input.onButtonPressed(Button.AB, function () {
@@ -71,11 +72,13 @@ function drawMaze () {
     )
 }
 input.onButtonPressed(Button.B, function () {
-    difficulty += 1
-    if (difficulty > 9) {
-        difficulty = 1
+    if (!(playing)) {
+        difficulty += 1
+        if (difficulty > 9) {
+            difficulty = 1
+        }
+        basic.showNumber(difficulty)
     }
-    basic.showNumber(difficulty)
 })
 function down () {
     if (table.getValue(maze, position_x, position_y - 1) == 0) {
