@@ -38,7 +38,7 @@ function gameOver () {
     end_time = input.runningTime()
     music._playDefaultBackground(music.builtInPlayableMelody(Melodies.Chase), music.PlaybackMode.InBackground)
     playing = false
-    last_score = Math.ceil((end_time - start_time) / 1000)
+    last_score = Math.ceil(height * width * (difficulty * 4) / ((end_time - start_time) / 1000))
     basic.showIcon(IconNames.Heart)
     basic.pause(200)
     basic.clearScreen()
