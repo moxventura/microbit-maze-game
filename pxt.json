@@ -4,8 +4,7 @@
     "dependencies": {
         "core": "*",
         "radio": "*",
-        "microphone": "*",
-        "ptx-table": "github:moxventura/ptx-table#master"
+        "microphone": "*"
     },
     "files": [
         "main.blocks",
@@ -22,5 +21,5 @@
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "blocksprj"
+    "preferredEditor": "tsprj"
 }

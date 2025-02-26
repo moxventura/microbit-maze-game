@@ -1,19 +1,20 @@
 function right () {
-    if (table.getValue(maze, position_x + 1, position_y) == 0) {
+    if (getValue(position_x + 1, position_y) == 0) {
         basic.pause(200)
         position_x = position_x + 1
         drawMaze()
     }
 }
-function shuffle (array: any[]) {
-    let tmp_directions: number[][] = []
-    for (let index = 0; index <= possible_directions.length - 1; index++) {
-        tmp_directions.push(possible_directions[index])
+function shuffle (array: number[][]) {
+    shuffled_array = []
+    for (let index = 0; index <= array.length - 1; index++) {
+        shuffled_array.push(array[index])
     }
-    possible_directions = []
-    while (tmp_directions.length > 0) {
-        possible_directions.unshift(tmp_directions.removeAt(randint(0, tmp_directions.length - 1)))
+    array = []
+    while (shuffled_array.length > 0) {
+        array.unshift(shuffled_array.removeAt(randint(0, shuffled_array.length - 1)))
     }
+    return array
 }
 function setSize () {
     height = randint(5, 7) * difficulty
@@ -26,14 +27,14 @@ function setSize () {
     }
 }
 function up () {
-    if (table.getValue(maze, position_x, position_y + 1) == 0) {
+    if (getValue(position_x, position_y - 1) == 0) {
         basic.pause(200)
-        position_y = position_y + 1
+        position_y = position_y - 1
         drawMaze()
     }
 }
 function left () {
-    if (table.getValue(maze, position_x - 1, position_y) == 0) {
+    if (getValue(position_x - 1, position_y) == 0) {
         basic.pause(200)
         position_x = position_x - 1
         drawMaze()
@@ -44,37 +45,51 @@ input.onButtonPressed(Button.A, function () {
         basic.showString("" + (last_score))
     }
 })
-function createMaze (cols: number, rows: number) {
-    for (let i = 0; i <= rows - 1; i++) {
-        maze[i] = []
-        for (let j = 0; j <= cols - 1; j++) {
-            maze[i][j] = 1
+function createMaze (w: number, h: number) {
+    maze = 0
+    new_maze = []
+    for (let k = 0; k <= w - 1; k++) {
+        new_maze[k] = []
+        for (let l = 0; l <= h - 1; l++) {
+            new_maze[k][l] = 1
         }
     }
-    carvePathIterative(0, 0)
-}
-function carvePathIterative (startX: number, startY: number) {
     // Initialize the stack with the starting position
-    stack = [[startX, startY]]
-    maze[startY][startX] = 0
+    stack = [[0, 0]]
+    new_maze[0][0] = 0
     while (stack.length > 0) {
         x = stack[stack.length - 1][0]
         y = stack[stack.length - 1][1]
         stack.pop()
-        shuffle(possible_directions)
+        possible_directions = shuffle(possible_directions)
         for (let chosenDirection of possible_directions) {
             // Move two steps in the x direction
             chooseX = x + chosenDirection[0] * 2
             // Move two steps in the y direction
             chooseY = y + chosenDirection[1] * 2
             // Check if the new position is within bounds and is a wall
-            if (chooseX >= 0 && chooseX < maze[0].length && chooseY >= 0 && chooseY < maze.length && maze[chooseY][chooseX] == 1) {
-                maze[y + chosenDirection[1]][x + chosenDirection[0]] = 0
-                maze[chooseY][chooseX] = 0
+            if (chooseX >= 0 && chooseX < new_maze[0].length && chooseY >= 0 && chooseY < new_maze.length && new_maze[chooseY][chooseX] == 1) {
+                new_maze[y + chosenDirection[1]][x + chosenDirection[0]] = 0
+                new_maze[chooseY][chooseX] = 0
                 // Push the new cell onto the stack
                 stack.push([chooseX, chooseY])
             }
         }
+    }
+}
+function getValue (x: number, y: number) {
+    if (new_maze[x] && new_maze[x][y] != undefined) {
+        return new_maze[x][y]
+    }
+    return 1
+}
+function output_maze () {
+    for (let i = 0; i <= width - 1; i++) {
+        mazeline = ""
+        for (let j = 0; j <= height - 1; j++) {
+            mazeline = "" + mazeline + new_maze[i][j]
+        }
+        serial.writeLine(mazeline)
     }
 }
 function gameOver () {
@@ -105,14 +120,26 @@ input.onButtonPressed(Button.AB, function () {
     }
 })
 function drawMaze () {
-    table.plotAt(
-    maze,
-    Math.max(2 - position_x, 0),
-    Math.max(2 - position_y, 0),
-    Math.max(position_x - 2, 0),
-    Math.max(position_y - 2, 0),
-    1
-    )
+    gridRow = Math.max(2 - position_y, 0)
+    gridCol = Math.max(2 - position_x, 0)
+    row = Math.max(position_y - 2, 0)
+    col = Math.max(position_x - 2, 0)
+    for (let m = 0; m <= 4; m++) {
+        for (let n = 0; n <= 4; n++) {
+            plotAtValue = 1
+            if (m >= gridRow && n >= gridCol) {
+                plotAtValue = getValue(col + n - gridCol, row + m - gridRow)
+            }
+            if (plotAtValue == undefined) {
+                plotAtValue = 1
+            }
+            if (plotAtValue && plotAtValue != 0) {
+                led.plot(n, m)
+            } else {
+                led.unplot(n, m)
+            }
+        }
+    }
 }
 input.onButtonPressed(Button.B, function () {
     if (!(playing)) {
@@ -124,9 +151,9 @@ input.onButtonPressed(Button.B, function () {
     }
 })
 function down () {
-    if (table.getValue(maze, position_x, position_y - 1) == 0) {
+    if (getValue(position_x, position_y + 1) == 0) {
         basic.pause(200)
-        position_y = position_y - 1
+        position_y = position_y + 1
         drawMaze()
     }
 }
@@ -139,25 +166,33 @@ function checkTilt () {
     if (xTilt > 10) {
         right()
     }
-    if (yTilt < -10) {
+    if (yTilt > 10) {
         down()
     }
-    if (yTilt > 10) {
+    if (yTilt < -10) {
         up()
     }
 }
 let yTilt = 0
 let xTilt = 0
+let plotAtValue = 0
+let col = 0
+let row = 0
+let gridCol = 0
+let gridRow = 0
 let start_time = 0
 let end_time = 0
+let mazeline = ""
 let chooseY = 0
 let chooseX = 0
+let new_maze: number[][] = []
+let maze = 0
 let last_score = 0
 let width = 0
 let height = 0
-let position_x = 0
+let shuffled_array: number[][] = []
 let position_y = 0
-let maze: number[][] = []
+let position_x = 0
 let playing = false
 let difficulty = 0
 let stack: number[][] = []
