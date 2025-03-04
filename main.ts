@@ -1,3 +1,6 @@
+// Maze game, created by Jesper Jeeninga 2025
+// For Mark, Frank en Laura
+
 /**
  * A function to shuffle the given array using blockcode
  * 
